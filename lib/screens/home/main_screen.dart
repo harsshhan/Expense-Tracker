@@ -1,16 +1,22 @@
 import 'dart:math';
 
-import 'package:expense_tracker/data/data.dart';
+import 'package:expense_tracker/data/category_data.dart';
+import 'package:expense_tracker/provider/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
+    final transactions = Provider.of<Transactions>(context).transactionsData;
+    final totalPrice = Provider.of<Transactions>(context).totalPrice; 
+
+    
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
         child: Column(
           children: [
             Row(
@@ -81,7 +87,7 @@ class MainScreen extends StatelessWidget {
                       ])),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: const [
+                children: [
                   SizedBox(
                     height: 25,
                   ),
@@ -94,7 +100,7 @@ class MainScreen extends StatelessWidget {
                   ),
                   // SizedBox(height: 5,),
                   Text(
-                    "₹1000",
+                    totalPrice.toStringAsFixed(2),
                     style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
@@ -130,8 +136,10 @@ class MainScreen extends StatelessWidget {
             ),
             Expanded(
                 child: ListView.builder(
-                    itemCount: transactionsData.length,
+                  
+                    itemCount: transactions.length,
                     itemBuilder: (context, index) {
+                      final name = transactions[index]['name'];
                       return Padding(
                         padding: EdgeInsets.only(bottom: 16),
                         child: Container(
@@ -149,16 +157,16 @@ class MainScreen extends StatelessWidget {
                                       height: 50,
                                       width: 50,
                                       decoration: BoxDecoration(
-                                          color: transactionsData[index]['color'],
+                                          color: categoryData[name]!['color'],
                                           shape: BoxShape.circle),
-                                          child: transactionsData[index]['icon'],
+                                          child: categoryData[name]!['icon'],
                                           alignment: Alignment.center,
                                     ),
                                     SizedBox(
                                       width: 12,
                                     ),
                                     Text(
-                                      transactionsData[index]['name'],
+                                      transactions[index]['name'],
                                       style: TextStyle(
                                           fontSize: 16,
                                           color: Theme.of(context)
@@ -172,7 +180,7 @@ class MainScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                       children: [
                                         Text(
-                                          transactionsData[index]['totalAmount'],
+                                          '- ₹${transactions[index]['totalAmount']}',
                                           style: TextStyle(
                                               fontSize: 14,
                                               color: Theme.of(context)
@@ -180,15 +188,15 @@ class MainScreen extends StatelessWidget {
                                                   .onSurface,
                                                   fontWeight: FontWeight.w400),
                                         ),
-                                        Text(
-                                          transactionsData[index]['date'],
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .outline,
-                                                  fontWeight: FontWeight.w400),
-                                        )
+                                        // Text(
+                                        //   transactions[index]['date'],
+                                        //   style: TextStyle(
+                                        //       fontSize: 14,
+                                        //       color: Theme.of(context)
+                                        //           .colorScheme
+                                        //           .outline,
+                                        //           fontWeight: FontWeight.w400),
+                                        // )
                                       ],
                                     )
                               ],
