@@ -1,12 +1,12 @@
 import 'dart:math';
 
-import 'package:expense_tracker/provider/provider.dart';
 import 'package:expense_tracker/screens/home/main_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../stats/stats.dart';
+import '../../provider/provider.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,9 +16,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Fetch categories with totals when screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ExpenseProvider>().fetchCategory();
+    });
+  }
+  
   final _formKey = GlobalKey<FormState>();
   String _category = '';
-  double _amount = 0.0;
 
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _expenseController = TextEditingController();
@@ -32,26 +40,29 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  void _saveExpense() {
-    final transactionsProvider = Provider.of<Transactions>(context,listen:false);
-    if (_formKey.currentState!.validate()) {
-      _category = _category;
-      _amount = double.parse(_expenseController.text);
-      transactionsProvider.updateExpense(_category, _amount);
-      Navigator.of(context).pop();
+  // void _saveExpense() {
+  //   final transactionsProvider = Provider.of<Transactions>(context,listen:false);
+  //   if (_formKey.currentState!.validate()) {
+  //     _category = _category;
+  //     _amount = double.parse(_expenseController.text);
+  //     // transactionsProvider.updateExpense(_category, _amount);
+  //     Navigator.of(context).pop();
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Expense added successfully")));
-    }
-  }
+  //     ScaffoldMessenger.of(context)
+  //         .showSnackBar(SnackBar(content: Text("Expense added successfully")));
+  //   }
+  // }
 
   var widgetList = [
     MainScreen(),
-    StatScreen(),
+    // StatScreen(),
   ];
   int index = 0;
   @override
   Widget build(BuildContext context) {
+    return Consumer<ExpenseProvider>(builder: (context, provider, child) {
+      double totalExpense = provider.categoriesWithTotal
+          .fold(0, (sum, category) => sum + category.totalAmount);
     return Scaffold(
       bottomNavigationBar: ClipRRect(
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
@@ -104,12 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           border: OutlineInputBorder(),
                         ),
                         hint: Text("Select a Category"),
-                        items: [
-                          "Food",
-                          "Shopping",
-                          "Health",
-                          "Travel"
-                        ].map((String category) {
+                        items: provider.categories.map((String category) {
                           return DropdownMenuItem<String>(
                             value: category,
                             child: Text(category),
@@ -147,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   TextButton(
                       onPressed: () => Navigator.of(context).pop(),
                       child: Text("Cancel")),
-                  TextButton(onPressed: _saveExpense, child: Text("Add")) // Add the onPressed callback to invoke _saveExpense
+                  // TextButton(onPressed: _saveExpense, child: Text("Add")) // Add the onPressed callback to invoke _saveExpense
                 ],
               ),
             );
@@ -169,5 +175,6 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Icon(Icons.add))),
       body: widgetList[index],
     );
+    });
   }
 }
